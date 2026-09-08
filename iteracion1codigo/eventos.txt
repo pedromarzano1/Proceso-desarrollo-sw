@@ -1,0 +1,4 @@
+E|asdas|2026-09-02|21:00|06:00|SANS_SOUCI|asdasd
+I|asd|asd@asd
+S|maluma|DJ|200000.0
+E|asdas|2026-09-03|09:00|12:00|SANS_SOUCI|asdas
