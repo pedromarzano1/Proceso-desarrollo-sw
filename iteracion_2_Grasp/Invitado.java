@@ -1,10 +1,6 @@
 /*
- * FUNCION PRINCIPAL: Representar a un invitado de un evento, con su nombre y
- * email, exponiendo los datos necesarios para mostrarlo y editarlo.
- *
- * GRASP - Experto: es dueño de sus propios atributos (nombre, email) y de como
- * se representa como texto (toString), por lo que es el responsable natural de
- * esa informacion dentro del modelo de dominio.
+ * Un invitado de un evento: nombre y email.
+ * Patrón: Experto, de sus propios datos.
  */
 public class Invitado {
     private String nombre, email;

@@ -1,10 +1,6 @@
 /*
- * FUNCION PRINCIPAL: Representar un servicio contratado para un evento (nombre
- * del proveedor, categoria y precio).
- *
- * GRASP - Experto: conoce y gestiona sus propios datos (nombre, categoría,
- * precio) y sabe representarse como texto, siendo el responsable natural de
- * esa parte del dominio.
+ * Un servicio contratado: proveedor, categoría y precio.
+ * Patrón: Experto, de sus propios datos.
  */
 public class ServicioContratado {
     private String nombre;

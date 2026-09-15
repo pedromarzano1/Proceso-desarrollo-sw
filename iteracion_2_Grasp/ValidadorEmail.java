@@ -1,14 +1,8 @@
 import java.util.regex.Pattern;
 
 /*
- * FUNCION PRINCIPAL: Validar que un texto tenga formato de email correcto
- * (usuario@dominio) mediante una expresion regular.
- *
- * GRASP - Fabricacion Pura: la validacion de un formato de texto no es
- * responsabilidad natural de Invitado, por lo que se delega a esta clase.
- * GRASP - Alta Cohesion: solo se ocupa de validar el formato de un email.
- * GRASP - Bajo Acoplamiento: DialogoDetalleEvento reutiliza esta validacion sin
- * duplicar la expresion regular ni conocer sus detalles internos.
+ * Valida el formato de un email con una expresión regular.
+ * Patrón: Fabricación Pura, esa validación no es tarea natural de Invitado.
  */
 public class ValidadorEmail {
     // Expresión regular para validar formato (ej: usuario@dominio.com)

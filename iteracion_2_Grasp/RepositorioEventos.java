@@ -5,17 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * FUNCION PRINCIPAL: Encargarse de la persistencia de los eventos: guardar la
- * lista completa de eventos (con sus invitados y servicios) en el archivo
- * "eventos.txt" y reconstruirla al cargarla desde ese archivo.
- *
- * GRASP - Fabricacion Pura: la lectura/escritura en disco no es responsabilidad
- * natural de Evento ni de GestorEventos, por lo que se aisla en esta clase
- * dedicada exclusivamente a persistencia.
- * GRASP - Alta cohesion: todo el codigo relacionado con el formato del archivo
- * y su parseo vive en un solo lugar.
- * GRASP - Bajo Acoplamiento: GestorEventos no sabe si los datos se guardan en
- * texto plano, en una base de datos, etc.; solo invoca guardar()/cargar().
+ * Guarda y carga los eventos del archivo eventos.txt.
+ * Patrón: Fabricación Pura, leer/escribir en disco no es tarea natural de
+ * Evento ni de GestorEventos.
  */
 public class RepositorioEventos {
     private static final String ARCHIVO = "eventos.txt";

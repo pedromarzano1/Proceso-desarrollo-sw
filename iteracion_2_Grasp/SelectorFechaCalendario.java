@@ -5,16 +5,10 @@ import java.util.List;
 import javax.swing.*;
 
 /*
- * FUNCION PRINCIPAL: Mostrar el dialogo de calendario (mes por mes), armar la
- * grilla de dias usando BotonDiaCalendario, marcar los dias pasados/ocupados
- * apoyandose en ValidadorFechaEvento y BuscadorFechasOcupadas, y devolver al
- * llamador la fecha que el usuario eligio.
- *
- * GRASP - Controlador: coordina la interaccion del usuario con el subsistema de
- * seleccion de fecha (navegacion de meses, clic en un dia), delegando las reglas
- * de validacion a las clases especializadas en vez de resolverlas el mismo.
- * GRASP - Bajo Acoplamiento: no calcula por su cuenta que fechas estan ocupadas ni
- * si una fecha es valida; se apoya en BuscadorFechasOcupadas y ValidadorFechaEvento.
+ * El diálogo del calendario: arma la grilla del mes y devuelve la fecha
+ * elegida.
+ * Patrón: Controlador, coordina la navegación y delega las validaciones en
+ * ValidadorFechaEvento y BuscadorFechasOcupadas.
  */
 public class SelectorFechaCalendario extends JDialog {
     private LocalDate fechaSeleccionada;

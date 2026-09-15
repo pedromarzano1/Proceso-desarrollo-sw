@@ -1,10 +1,6 @@
 /*
- * FUNCION PRINCIPAL: Enumerar los salones/lugares disponibles donde puede
- * realizarse un evento, junto con su nombre descriptivo para mostrar en la UI.
- *
- * GRASP - Experto: es quien conoce el nombre legible de cada lugar (getNombre) y
- * como mostrarse como texto (toString), evitando que esa informacion se
- * disperse en otras clases.
+ * Los salones disponibles para un evento, con su nombre para mostrar.
+ * Patrón: Experto, cada lugar conoce su propio nombre.
  */
 public enum Lugar {
     SANS_SOUCI("Palacio Sans Souci (Victoria, GBA Norte)"),

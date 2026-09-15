@@ -1,19 +1,14 @@
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /*
- * FUNCION PRINCIPAL: Representar el concepto central del dominio, un evento,
- * con sus datos (nombre, fecha, horario, lugar, descripcion) y sus colecciones
- * asociadas de invitados y servicios contratados.
- *
- * GRASP - Experto: es el dueño de sus propios datos y de las listas de
- * invitados/servicios, por lo que es el responsable de agregarlos, eliminarlos
- * y exponerlos (agregarInvitado, eliminarServicio, etc.).
- * GRASP - Alta cohesion: agrupa unicamente el estado y comportamiento propio de
- * un evento, sin mezclar validaciones ni persistencia (eso esta delegado a
- * ValidadorFechaEvento, ValidadorSuperposicion y RepositorioEventos).
+ * El evento: nombre, fecha, horario, lugar, descripción, invitados y
+ * servicios contratados.
+ * Patrón: Experto, es dueño de todos esos datos, incluido el cálculo de su
+ * propio rango de fecha/hora (getFechaHoraInicio/getFechaHoraFin).
  */
 public class Evento {
     private String nombre, descripcion;
@@ -42,6 +37,18 @@ public class Evento {
     public void setHoraFin(LocalTime hF) { horaFin = hF; }
     public void setLugar(Lugar l) { lugar = l; }
     public void setDescripcion(String d) { descripcion = d; }
+
+    public LocalDateTime getFechaHoraInicio() { return fecha.atTime(horaInicio); }
+
+    public LocalDateTime getFechaHoraFin() {
+        LocalDateTime fin = fecha.atTime(horaFin);
+        // Si la hora de fin es menor o igual a la de inicio (ej: 21:00 a 06:00),
+        // le sumamos 1 día automáticamente a la fecha de fin.
+        if (!horaFin.isAfter(horaInicio)) {
+            fin = fin.plusDays(1);
+        }
+        return fin;
+    }
 
     public List<Invitado> getInvitados() { return invitados; }
     public List<ServicioContratado> getServicios() { return servicios; }

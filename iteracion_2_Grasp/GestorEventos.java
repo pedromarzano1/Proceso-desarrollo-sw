@@ -1,19 +1,11 @@
 import java.util.List;
 
 /*
- * FUNCION PRINCIPAL: Administrar la colleccion de eventos en memoria (agregar,
- * eliminar, actualizar) y coordinar con RepositorioEventos para que cada
- * cambio quede persistido en disco.
- *
- * GRASP - Creador: es quien crea/instancia el RepositorioEventos y quien recibe
- * los objetos Evento para agregarlos a la lista, ya que es quien agrupa y
- * contiene la coleccion de eventos (condicion de Creador: "contiene o agrega
- * instancialmente" los objetos).
- * GRASP - Controlador (de caso de uso): actua como intermediario entre la
- * interfaz (VentanaPrincipal) y la persistencia (RepositorioEventos), sin
- * conocer detalles de la interfaz grafica.
+ * Administra la lista de eventos en memoria y coordina con
+ * RepositorioEventos para persistir los cambios.
+ * Patrón: Creador (instancia el repositorio y agrega los eventos que
+ * contiene) y de paso Controlador entre la interfaz y la persistencia.
  */
-//Clase creador
 
 public class GestorEventos {
     private final List<Evento> listaEventos;

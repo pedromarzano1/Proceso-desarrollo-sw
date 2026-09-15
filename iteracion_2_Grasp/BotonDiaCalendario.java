@@ -3,16 +3,9 @@ import java.time.LocalDate;
 import javax.swing.JButton;
 
 /*
- * FUNCION PRINCIPAL: Representar visualmente, dentro del calendario, un dia
- * concreto (JButton especializado). Sabe mostrar su propio estado: dia pasado,
- * dia ocupado o dia disponible, y notificar al SelectorFechaCalendario cuando el
- * usuario lo selecciona.
- *
- * GRASP - Experto (Information Expert): es quien tiene la fecha que representa,
- * por lo que es el objeto adecuado para marcarse a si mismo como pasado u ocupado.
- * GRASP - Alta cohesion: solo se ocupa de su propia apariencia y de comunicar el
- * clic; no decide reglas de negocio (eso lo hacen ValidadorFechaEvento y
- * BuscadorFechasOcupadas).
+ * El botón de cada día del calendario. Se pinta solo (pasado, ocupado) y
+ * avisa al SelectorFechaCalendario cuando lo tocan.
+ * Patrón: Experto, es el propio botón el que tiene la fecha que representa.
  */
 public class BotonDiaCalendario extends JButton {
     private LocalDate fechaRepresentada;

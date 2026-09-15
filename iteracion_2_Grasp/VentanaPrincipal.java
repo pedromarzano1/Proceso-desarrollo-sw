@@ -7,18 +7,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 /*
- * FUNCION PRINCIPAL: Ventana principal de la aplicacion. Muestra la tabla de
- * eventos y los botones de accion (Agregar, Editar, Ver detalles, Eliminar),
- * arma los formularios de alta/edicion de evento y coordina las validaciones
- * (fecha, superposicion de horario/salon) antes de delegar los cambios al
- * GestorEventos.
- *
- * GRASP - Controlador: es el controlador de la interfaz principal; recibe los
- * eventos de los botones y orquesta las llamadas a GestorEventos,
- * ValidadorSuperposicion y SelectorFechaCalendario, sin implementar el mismo
- * esas reglas de negocio.
- * GRASP - Bajo Acoplamiento: delega la validacion de superposicion y de fecha a
- * clases especializadas en lugar de resolverlas dentro de la ventana.
+ * La ventana principal: tabla de eventos y botones de Agregar, Editar, Ver
+ * detalles, Eliminar.
+ * Patrón: Controlador, orquesta los llamados a GestorEventos,
+ * ValidadorSuperposicion y SelectorFechaCalendario.
  */
 public class VentanaPrincipal extends JFrame {
 

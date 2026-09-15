@@ -3,17 +3,10 @@ import java.time.format.DateTimeFormatter;
 import javax.swing.*;
 
 /*
- * FUNCION PRINCIPAL: dialogo de detalle de un evento especifico. Permite ver sus
- * datos generales y administrar (agregar, editar, eliminar) sus invitados y
- * servicios contratados, validando el email con ValidadorEmail y persistiendo
- * cada cambio a traves de GestorEventos.
- *
- * GRASP - Controlador: coordina las acciones del usuario sobre los invitados y
- * servicios de un evento puntual, delegando la validacion de formato de email a
- * ValidadorEmail y la persistencia a GestorEventos.
- * GRASP - Experto (delegado): usa a Evento como experto para agregar/eliminar
- * invitados y servicios (evento.agregarInvitado, evento.eliminarServicio),
- * en vez de manipular sus listas internas directamente.
+ * Ventana de detalle de un evento: ver sus datos y administrar invitados y
+ * servicios contratados.
+ * Patrón: Controlador, coordina esas acciones delegando el formato del
+ * email a ValidadorEmail y el guardado a GestorEventos.
  */
 public class DialogoDetalleEvento extends JDialog {
     private Evento evento;

@@ -1,9 +1,7 @@
 /*
- * FUNCION PRINCIPAL: Enumerar las categorias posibles de un servicio contratado
- * (catering, DJ, fotografia, etc.), junto con su nombre descriptivo.
- *
- * GRASP - Experto: concentra el conocimiento de su propio nombre legible, en
- * lugar de que ServicioContratado u otra clase tengan que traducirlo.
+ * Categorías de servicio que se pueden contratar (catering, DJ, etc.), con
+ * su nombre para mostrar en pantalla.
+ * Patrón: Experto, cada categoría conoce su propio nombre legible.
  */
 public enum CategoriaServicio {
     CATERING("Catering"),
