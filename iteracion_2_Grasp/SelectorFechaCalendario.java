@@ -7,33 +7,35 @@ import javax.swing.*;
 /*
  * El diálogo del calendario: arma la grilla del mes y devuelve la fecha
  * elegida.
- * Patrón: Controlador, coordina la navegación y delega las validaciones en
- * ValidadorFechaEvento y BuscadorFechasOcupadas.
+ * Rol: VISTA (MVC). Le pregunta al GestorEventos (Controlador) qué fechas
+ * están libres para el salón elegido; el gestor a su vez lo resuelve con la
+ * estrategia de disponibilidad activa.
  */
 public class SelectorFechaCalendario extends JDialog {
     private LocalDate fechaSeleccionada;
     private YearMonth mesActual;
-    private BuscadorFechasOcupadas buscador;
-    private ValidadorFechaEvento validador;
+    private final GestorEventos gestor;
+    private final ValidadorFechaEvento validador = new ValidadorFechaEvento();
+    private final Evento eventoActual;
+    private final Lugar lugar;
     private JPanel panelDias;
     private JLabel etiquetaMes;
-    private Evento eventoActual;
 
-    public SelectorFechaCalendario(Frame owner, GestorEventos gestor, Evento eventoActual) {
-        super(owner, "Seleccionar Fecha", true);
+    public SelectorFechaCalendario(Frame owner, GestorEventos gestor, Evento eventoActual, Lugar lugar) {
+        super(owner, "Seleccionar Fecha - " + lugar.getNombre(), true);
+        this.gestor = gestor;
         this.eventoActual = eventoActual;
-        this.buscador = new BuscadorFechasOcupadas(gestor);
-        this.validador = new ValidadorFechaEvento();
-        
-        // Si estamos editando un evento futuro, abrimos el calendario en su mes
+        this.lugar = lugar;
+
+        // Si estamos editando un evento, abrimos el calendario en su mes
         if (eventoActual != null && eventoActual.getFecha() != null) {
             this.mesActual = YearMonth.from(eventoActual.getFecha());
         } else {
             this.mesActual = YearMonth.now();
         }
-        
+
         setLayout(new BorderLayout());
-        setSize(400, 300);
+        setSize(450, 320);
         setLocationRelativeTo(owner);
         inicializarComponentes();
         actualizarCalendario();
@@ -43,10 +45,10 @@ public class SelectorFechaCalendario extends JDialog {
         JPanel panelNavegacion = new JPanel(new BorderLayout());
         JButton btnAnterior = new JButton("<");
         btnAnterior.addActionListener(e -> { mesActual = mesActual.minusMonths(1); actualizarCalendario(); });
-        
+
         JButton btnSiguiente = new JButton(">");
         btnSiguiente.addActionListener(e -> { mesActual = mesActual.plusMonths(1); actualizarCalendario(); });
-        
+
         etiquetaMes = new JLabel("", SwingConstants.CENTER);
         panelNavegacion.add(btnAnterior, BorderLayout.WEST);
         panelNavegacion.add(etiquetaMes, BorderLayout.CENTER);
@@ -60,7 +62,7 @@ public class SelectorFechaCalendario extends JDialog {
     private void actualizarCalendario() {
         panelDias.removeAll();
         etiquetaMes.setText(mesActual.getMonth() + " " + mesActual.getYear());
-        
+
         String[] diasSemana = {"Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"};
         for (String dia : diasSemana) {
             panelDias.add(new JLabel(dia, SwingConstants.CENTER));
@@ -68,14 +70,14 @@ public class SelectorFechaCalendario extends JDialog {
 
         LocalDate primerDiaMes = mesActual.atDay(1);
         int diaSemanaInicio = primerDiaMes.getDayOfWeek().getValue();
-        
+
         // Espacios vacíos antes del primer día del mes
         for (int i = 1; i < diaSemanaInicio; i++) {
-            panelDias.add(new JLabel("")); 
+            panelDias.add(new JLabel(""));
         }
 
         int diasEnMes = mesActual.lengthOfMonth();
-        List<LocalDate> fechasOcupadas = buscador.obtenerFechasOcupadas(eventoActual);
+        List<LocalDate> fechasConEventos = gestor.obtenerFechasConEventos(lugar, eventoActual);
 
         for (int dia = 1; dia <= diasEnMes; dia++) {
             LocalDate fechaIteracion = mesActual.atDay(dia);
@@ -83,8 +85,10 @@ public class SelectorFechaCalendario extends JDialog {
 
             if (!validador.esFechaValida(fechaIteracion)) {
                 boton.marcarComoPasado();
-            } else if (fechasOcupadas.contains(fechaIteracion)) {
+            } else if (!gestor.fechaDisponible(fechaIteracion, lugar, eventoActual)) {
                 boton.marcarComoOcupado();
+            } else if (fechasConEventos.contains(fechaIteracion)) {
+                boton.marcarConReservas();
             }
 
             panelDias.add(boton);

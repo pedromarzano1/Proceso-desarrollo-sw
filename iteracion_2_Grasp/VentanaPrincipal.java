@@ -8,36 +8,49 @@ import javax.swing.table.DefaultTableModel;
 
 /*
  * La ventana principal: tabla de eventos y botones de Agregar, Editar, Ver
- * detalles, Eliminar.
- * Patrón: Controlador, orquesta los llamados a GestorEventos,
- * ValidadorSuperposicion y SelectorFechaCalendario.
+ * detalles, Eliminar, más el selector de la regla de disponibilidad.
+ * Rol: VISTA (MVC). Muestra datos, junta lo que escribe el usuario, controla
+ * el formato de las horas y le pasa todo a GestorEventos (el Controlador).
+ * No decide reglas de negocio.
  */
 public class VentanaPrincipal extends JFrame {
 
-    private GestorEventos gestor = new GestorEventos();
-    private DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
-    private ValidadorSuperposicion validadorSuperposicion = new ValidadorSuperposicion();
-    
-    private DefaultTableModel modeloTabla = new DefaultTableModel(new Object[]{"Nombre", "Fecha", "Horario", "Salón"}, 0);
-    private JTable tablaEventos = new JTable(modeloTabla);
+    private final GestorEventos gestor;
+    private final DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm");
 
-    public VentanaPrincipal() {
+    private final DefaultTableModel modeloTabla = new DefaultTableModel(new Object[]{"Nombre", "Fecha", "Horario", "Salón"}, 0);
+    private final JTable tablaEventos = new JTable(modeloTabla);
+
+    public VentanaPrincipal(GestorEventos gestor) {
+        this.gestor = gestor;
         setTitle("Gestor de Eventos");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(750, 450);
+        setSize(850, 450);
         setLocationRelativeTo(null);
         tablaEventos.setDefaultEditor(Object.class, null);
         add(new JScrollPane(tablaEventos), BorderLayout.CENTER);
-        
+
         JPanel panelBotones = new JPanel();
         panelBotones.add(crearBoton("Agregar", eventoClic -> agregarEvento()));
         panelBotones.add(crearBoton("Editar", eventoClic -> editarEvento()));
         panelBotones.add(crearBoton("Ver detalles y Servicios", eventoClic -> abrirDetalles()));
         panelBotones.add(crearBoton("Eliminar", eventoClic -> eliminarEvento()));
+        panelBotones.add(new JLabel("   Regla de reserva:"));
+        panelBotones.add(crearSelectorEstrategia());
         add(panelBotones, BorderLayout.SOUTH);
-        
+
         actualizarTablaEventos();
+    }
+
+    // Strategy: el usuario elige la regla y la ventana se la pasa al Contexto (GestorEventos).
+    private JComboBox<EstrategiaDisponibilidad> crearSelectorEstrategia() {
+        JComboBox<EstrategiaDisponibilidad> combo = new JComboBox<>(new EstrategiaDisponibilidad[]{
+                new DisponibilidadPorSalonYHorario(),
+                new DisponibilidadPorDiaCompleto()
+        });
+        combo.addActionListener(e -> gestor.setEstrategia((EstrategiaDisponibilidad) combo.getSelectedItem()));
+        return combo;
     }
 
     private JButton crearBoton(String textoBoton, ActionListener accionAsignada) {
@@ -73,26 +86,20 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private void agregarEvento() {
-        Evento eventoNuevo = procesarFormulario(null);
-        if (eventoNuevo != null) {
-            gestor.agregarEvento(eventoNuevo);
-            actualizarTablaEventos();
-        }
+        if (procesarFormulario(null)) actualizarTablaEventos();
     }
 
     private void editarEvento() {
         Evento eventoAEditar = obtenerEventoSeleccionado();
-        if (eventoAEditar != null && procesarFormulario(eventoAEditar) != null) {
-            gestor.actualizar();
-            actualizarTablaEventos();
-        }
+        if (eventoAEditar != null && procesarFormulario(eventoAEditar)) actualizarTablaEventos();
     }
 
     private void abrirDetalles() {
         Evento eventoDetalle = obtenerEventoSeleccionado();
         if (eventoDetalle == null) return;
-        DialogoDetalleEvento dialogo = new DialogoDetalleEvento(this, eventoDetalle, gestor, () -> actualizarTablaEventos());
-        dialogo.setVisible(true);
+        ControladorDetalleEvento controlador = new ControladorDetalleEvento(eventoDetalle, gestor);
+        new DialogoDetalleEvento(this, controlador).setVisible(true);
+        actualizarTablaEventos();
     }
 
     private void eliminarEvento() {
@@ -105,22 +112,23 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // --- MÉTODOS DESCOMPUESTOS PARA SOLUCIONAR "LONG METHOD" ---
-
-    private Evento procesarFormulario(Evento eventoOriginal) {
+    // Muestra el formulario hasta que los datos sean válidos o el usuario cancele.
+    // Devuelve true si se guardó algo.
+    private boolean procesarFormulario(Evento eventoOriginal) {
         JTextField campoNombre = new JTextField(eventoOriginal == null ? "" : eventoOriginal.getNombre());
         JComboBox<Lugar> comboLugar = new JComboBox<>(Lugar.values());
         if (eventoOriginal != null) comboLugar.setSelectedItem(eventoOriginal.getLugar());
-        
+
         JTextField campoHoraInicio = new JTextField(eventoOriginal == null ? "09:00" : eventoOriginal.getHoraInicio().format(formatoHora));
         JTextField campoHoraFin = new JTextField(eventoOriginal == null ? "12:00" : eventoOriginal.getHoraFin().format(formatoHora));
         JTextField campoDescripcion = new JTextField(eventoOriginal == null ? "" : eventoOriginal.getDescripcion());
-        
+
         JButton botonFecha = new JButton(eventoOriginal == null ? "Abrir Calendario" : eventoOriginal.getFecha().format(formatoFecha));
         final LocalDate[] fechaElegida = {eventoOriginal == null ? null : eventoOriginal.getFecha()};
 
         botonFecha.addActionListener(eventoClic -> {
-            SelectorFechaCalendario selector = new SelectorFechaCalendario(this, gestor, eventoOriginal);
+            Lugar lugarElegido = (Lugar) comboLugar.getSelectedItem();
+            SelectorFechaCalendario selector = new SelectorFechaCalendario(this, gestor, eventoOriginal, lugarElegido);
             selector.setVisible(true);
             if (selector.getFechaSeleccionada() != null) {
                 fechaElegida[0] = selector.getFechaSeleccionada();
@@ -130,60 +138,40 @@ public class VentanaPrincipal extends JFrame {
 
         while (true) {
             boolean formAceptado = solicitarDatos(eventoOriginal == null ? "Nuevo evento" : "Editar evento",
-                    new String[]{"Nombre:", "Fecha:", "Hora Inicio (HH:mm):", "Hora Fin (HH:mm):", "Salón:", "Descripción:"},
-                    new JComponent[]{campoNombre, botonFecha, campoHoraInicio, campoHoraFin, comboLugar, campoDescripcion});
-                    
-            if (!formAceptado) return null; 
-            
-            if (campoNombre.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "El nombre no puede estar vacío.");
-                continue;
+                    new String[]{"Salón:", "Fecha:", "Nombre:", "Hora Inicio (HH:mm):", "Hora Fin (HH:mm):", "Descripción:"},
+                    new JComponent[]{comboLugar, botonFecha, campoNombre, campoHoraInicio, campoHoraFin, campoDescripcion});
+
+            if (!formAceptado) return false;
+
+            // Validación de FORMATO (le corresponde a la vista, según MVC)
+            LocalTime horaInicio = parsearHora(campoHoraInicio.getText().trim());
+            LocalTime horaFin = parsearHora(campoHoraFin.getText().trim());
+            if (horaInicio == null || horaFin == null) continue;
+
+            String nombre = campoNombre.getText().trim();
+            Lugar lugar = (Lugar) comboLugar.getSelectedItem();
+            String descripcion = campoDescripcion.getText().trim();
+
+            // Las reglas de negocio las valida el Controlador
+            try {
+                if (eventoOriginal == null) {
+                    gestor.agregarEvento(nombre, fechaElegida[0], horaInicio, horaFin, lugar, descripcion);
+                } else {
+                    gestor.editarEvento(eventoOriginal, nombre, fechaElegida[0], horaInicio, horaFin, lugar, descripcion);
+                }
+                return true;
+            } catch (IllegalArgumentException error) {
+                JOptionPane.showMessageDialog(this, error.getMessage());
             }
-            if (fechaElegida[0] == null) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar una fecha.");
-                continue;
-            }
-
-            LocalTime horaInicioParseada = parsearHoraSegmento(campoHoraInicio.getText().trim());
-            LocalTime horaFinParseada = parsearHoraSegmento(campoHoraFin.getText().trim());
-            
-            if (horaInicioParseada == null || horaFinParseada == null) continue;
-
-            Evento eventoTemporal = construirEventoTemporal(campoNombre, fechaElegida[0], horaInicioParseada, horaFinParseada, comboLugar, campoDescripcion, eventoOriginal);
-
-            if (validadorSuperposicion.haySuperposicion(eventoTemporal, gestor)) {
-                JOptionPane.showMessageDialog(this, "El salón seleccionado ya está reservado en ese horario.");
-                continue; 
-            }
-
-            return aplicarCambiosAEvento(eventoOriginal, eventoTemporal);
         }
     }
 
-    private LocalTime parsearHoraSegmento(String textoHora) {
+    private LocalTime parsearHora(String textoHora) {
         try {
             return LocalTime.parse(textoHora, formatoHora);
         } catch (Exception excepcionFormato) {
             JOptionPane.showMessageDialog(this, "Formato de hora inválido. Utilice HH:mm.");
             return null;
         }
-    }
-
-    private Evento construirEventoTemporal(JTextField nombre, LocalDate fecha, LocalTime inicio, LocalTime fin, JComboBox<Lugar> lugar, JTextField desc, Evento original) {
-        if (original != null) {
-            original.setFecha(fecha);
-            original.setHoraInicio(inicio);
-            original.setHoraFin(fin);
-            original.setLugar((Lugar) lugar.getSelectedItem());
-            return original;
-        }
-        return new Evento(nombre.getText().trim(), fecha, inicio, fin, (Lugar) lugar.getSelectedItem(), desc.getText().trim());
-    }
-
-    private Evento aplicarCambiosAEvento(Evento original, Evento temporal) {
-        if (original == null) return temporal;
-        original.setNombre(temporal.getNombre());
-        original.setDescripcion(temporal.getDescripcion());
-        return original;
     }
 }

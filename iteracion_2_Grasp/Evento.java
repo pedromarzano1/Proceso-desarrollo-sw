@@ -2,13 +2,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /*
  * El evento: nombre, fecha, horario, lugar, descripción, invitados y
  * servicios contratados.
- * Patrón: Experto, es dueño de todos esos datos, incluido el cálculo de su
- * propio rango de fecha/hora (getFechaHoraInicio/getFechaHoraFin).
+ * Patrones:
+ *  - Experto: es dueño de todos esos datos, calcula su propio rango de
+ *    fecha/hora y sabe decir si se superpone con otro evento (seSuperponeCon).
+ *  - Creador: contiene a sus Invitados y ServiciosContratados, por eso es
+ *    quien los crea (agregarInvitado / agregarServicio reciben los datos).
  */
 public class Evento {
     private String nombre, descripcion;
@@ -19,7 +23,7 @@ public class Evento {
     private final List<ServicioContratado> servicios = new ArrayList<>();
 
     public Evento(String nombre, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, Lugar lugar, String descripcion) {
-        this.nombre = nombre; this.fecha = fecha; 
+        this.nombre = nombre; this.fecha = fecha;
         this.horaInicio = horaInicio; this.horaFin = horaFin;
         this.lugar = lugar; this.descripcion = descripcion;
     }
@@ -30,7 +34,7 @@ public class Evento {
     public LocalTime getHoraFin() { return horaFin; }
     public Lugar getLugar() { return lugar; }
     public String getDescripcion() { return descripcion; }
-    
+
     public void setNombre(String n) { nombre = n; }
     public void setFecha(LocalDate f) { fecha = f; }
     public void setHoraInicio(LocalTime hI) { horaInicio = hI; }
@@ -50,10 +54,33 @@ public class Evento {
         return fin;
     }
 
-    public List<Invitado> getInvitados() { return invitados; }
-    public List<ServicioContratado> getServicios() { return servicios; }
-    public void agregarInvitado(Invitado i) { invitados.add(i); }
-    public void agregarServicio(ServicioContratado s) { servicios.add(s); }
+    // Experto: el evento tiene su salón y su rango horario, así que es quien
+    // sabe si choca con otro. Fórmula de solapamiento: (InicioA < FinB) y (FinA > InicioB)
+    public boolean seSuperponeCon(Evento otro) {
+        if (this.lugar != otro.getLugar()) return false;
+        return this.getFechaHoraInicio().isBefore(otro.getFechaHoraFin())
+            && this.getFechaHoraFin().isAfter(otro.getFechaHoraInicio());
+    }
+
+    // Se devuelven listas de solo lectura: para agregar o sacar hay que pasar
+    // por los métodos del Evento (encapsulamiento).
+    public List<Invitado> getInvitados() { return Collections.unmodifiableList(invitados); }
+    public List<ServicioContratado> getServicios() { return Collections.unmodifiableList(servicios); }
+
+    // Creador: el Evento contiene a sus invitados, entonces él los instancia.
+    public Invitado agregarInvitado(String nombre, String email) {
+        Invitado nuevo = new Invitado(nombre, email);
+        invitados.add(nuevo);
+        return nuevo;
+    }
+
+    // Creador: el Evento contiene a sus servicios, entonces él los instancia.
+    public ServicioContratado agregarServicio(String nombre, CategoriaServicio categoria, double precio) {
+        ServicioContratado nuevo = new ServicioContratado(nombre, categoria, precio);
+        servicios.add(nuevo);
+        return nuevo;
+    }
+
     public void eliminarInvitado(Invitado i) { invitados.remove(i); }
     public void eliminarServicio(ServicioContratado s) { servicios.remove(s); }
 
