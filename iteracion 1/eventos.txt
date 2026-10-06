@@ -1,0 +1,9 @@
+E|fiesta XV|2026-09-03|CABA|elegante sport
+A|Pedro|Pedrito@gmail.com
+R|DJ|Audiovisual
+R|coca|Catering
+E|fiesta del salame|2026-09-05|Mercedes|FIesta nacional del salame
+A|los palmera|palmerita
+A|bauza|bauti@gmail.com
+R|bebida personal|Catering
+E|fiesta|2026-10-01|caba|x
